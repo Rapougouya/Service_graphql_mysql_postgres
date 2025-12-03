@@ -7,8 +7,3 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['graphql-api:8000']
-
-  # Scrape Kafka exporter
-  - job_name: 'kafka'
-    static_configs:
-      - targets: ['kafka-exporter:9308']

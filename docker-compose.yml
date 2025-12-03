@@ -1,4 +1,8 @@
 services:
+
+  # ============================
+  # ZOOKEEPER
+  # ============================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
@@ -8,42 +12,44 @@ services:
       - "22181:2181"
     networks:
       - monitoring
+    healthcheck:
+      test: ["CMD", "nc", "-z", "0.0.0.0", "2181"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
 
+
+  # ============================
+  # KAFKA
+  # ============================
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
       - zookeeper
-    ports:
-      - "9092:9092"
-      - "9093:9093"
+    command: >
+      bash -c "until nc -z zookeeper 2181; do echo 'waiting for zookeeper'; sleep 1; done;
+               /etc/confluent/docker/run"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-    networks:
-      - monitoring
-
-  kafka-exporter:
-    image: danielqsj/kafka-exporter:latest
     ports:
-      - "9308:9308"
-    command:
-      - '--kafka.server=kafka:9092'
-    depends_on:
-      - kafka
+      - "9092:9092"
     networks:
       - monitoring
 
-
-
+  # ============================
+  # TON APPLICATION GRAPHQL
+  # ============================
   graphql-api:
     container_name: graphql-api
-    image: graphql-api:latest
+    build: .              # ← OBLIGATOIRE
+    image: graphql-api    # ← maintenant Docker connaît l’image
     ports:
       - "8000:8000"
     environment:
@@ -67,6 +73,39 @@ services:
     networks:
       - monitoring
     restart: on-failure
+
+
+  etl:
+   container_name: etl-consumer
+   build:
+    context: .        # <-- dossier racine du projet
+    dockerfile: src/etl/Dockerfile
+   restart: always
+   depends_on:
+    - kafka
+    - postgres
+   environment:
+    KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    KAFKA_TOPIC: employes-sync
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: entreprise
+   networks:
+    - monitoring
+
+  kafka-consumer:
+     build: .
+     command: python -m src.etl.kafka_consumer
+     depends_on:
+      - kafka
+     networks:
+      - monitoring
+
+  # ============================
+  # Kafka UI
+  # ============================
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     depends_on:
@@ -80,6 +119,9 @@ services:
     networks:
       - monitoring
 
+  # ============================
+  # MySQL
+  # ============================
   mysql:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
@@ -94,6 +136,9 @@ services:
     networks:
       - monitoring
 
+  # ============================
+  # PostgreSQL
+  # ============================
   postgres:
     image: postgres:13
     environment:
@@ -108,6 +153,9 @@ services:
     networks:
       - monitoring
 
+  # ============================
+  # Prometheus
+  # ============================
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -118,22 +166,26 @@ services:
     networks:
       - monitoring
 
+  # ============================
+  # Grafana
+  # ============================
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+    - "3000:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: grafana@
     volumes:
-      - ./grafana/data:/var/lib/grafana
+    - ./grafana/data:/var/lib/grafana
+    - ./grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
-      - monitoring
+    - monitoring
+
 
 volumes:
   mysql_data:
   postgres_data:
   prometheus_data:
-  projet_projet_service_graphql_grafana_data:
 
 networks:
   monitoring:

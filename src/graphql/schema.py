@@ -19,7 +19,6 @@ class EmployeType:
     salaire: float
     department: str
     date_embauche: datetime
-    synced_at: Optional[datetime] = None
 
 
 @strawberry.input
@@ -89,70 +88,74 @@ class Mutation:
 
     @strawberry.mutation
     def create_employe(self, input: EmployeInput) -> EmployeType:
-        client = get_mysql_client()
-        with client.get_session() as session:
-            new_emp = EmployeMySQL(
-                nom=input.nom,
-                prenom=input.prenom,
-                email=input.email,
-                poste=input.poste,
-                salaire=input.salaire,
-                department=input.department
-            )
-            session.add(new_emp)
-            session.commit()  # ✅ CHANGEMENT : utiliser commit() au lieu de flush()
-            session.refresh(new_emp)  # ✅ Pour obtenir l'ID généré
+      from datetime import datetime
+    
+      client = get_mysql_client()
+      with client.get_session() as session:
+        new_emp = EmployeMySQL(
+            nom=input.nom,
+            prenom=input.prenom,
+            email=input.email,
+            poste=input.poste,
+            salaire=input.salaire,
+            department=input.department,
+            date_embauche=datetime.utcnow()
+        )
+        session.add(new_emp)
+        session.commit()
+        session.refresh(new_emp)
 
         # Synchroniser dans Kafka
-        producer = EmployeProducer()
-        producer.sync_all_employes()
+        try:
+           producer = EmployeProducer()
+           producer.sync_all_employes()
+        except Exception as e:
+          print(f"⚠️ Kafka sync error: {e}")
 
         return EmployeType(
-            id=new_emp.id,
-            nom=new_emp.nom,
-            prenom=new_emp.prenom,
-            email=new_emp.email,
-            poste=new_emp.poste,
-            salaire=new_emp.salaire,
-            department=new_emp.department,
-            date_embauche=new_emp.date_embauche,
-            synced_at=new_emp.synced_at
+           id=new_emp.id,
+           nom=new_emp.nom,
+           prenom=new_emp.prenom,
+           email=new_emp.email,
+           poste=new_emp.poste,
+           salaire=new_emp.salaire,
+           department=new_emp.department,
+           date_embauche=new_emp.date_embauche
         )
 
     @strawberry.mutation
     def update_employe(self, id: int, input: EmployeInput) -> Optional[EmployeType]:
-        """Mutation pour mettre à jour un employé"""
-        client = get_mysql_client()
-        with client.get_session() as session:
-            employe = session.query(EmployeMySQL).filter_by(id=id).first()
-            if not employe:
-                return None
-            
-            # Mettre à jour les champs
-            employe.nom = input.nom
-            employe.prenom = input.prenom
-            employe.email = input.email
-            employe.poste = input.poste
-            employe.salaire = input.salaire
-            employe.department = input.department
-            
-            session.commit()
-            
-            # Déclencher la synchronisation
-            producer = EmployeProducer()
-            producer.sync_all_employes()
-            
-            return EmployeType(
-                id=employe.id,
-                nom=employe.nom,
-                prenom=employe.prenom,
-                email=employe.email,
-                poste=employe.poste,
-                salaire=employe.salaire,
-                department=employe.department,
-                date_embauche=employe.date_embauche,
-                synced_at=employe.synced_at
-            )
+      """Mutation pour mettre à jour un employé"""
+      client = get_mysql_client()
+      with client.get_session() as session:
+        employe = session.query(EmployeMySQL).filter_by(id=id).first()
+        if not employe:
+            return None
+        
+        # Mettre à jour les champs
+        employe.nom = input.nom
+        employe.prenom = input.prenom
+        employe.email = input.email
+        employe.poste = input.poste
+        employe.salaire = input.salaire
+        employe.department = input.department
+        
+        session.commit()
+        
+        # Déclencher la synchronisation
+        producer = EmployeProducer()
+        producer.sync_all_employes()
+        
+        return EmployeType(
+            id=employe.id,
+            nom=employe.nom,
+            prenom=employe.prenom,
+            email=employe.email,
+            poste=employe.poste,
+            salaire=employe.salaire,
+            department=employe.department,
+            date_embauche=employe.date_embauche
+        )
 
     @strawberry.mutation
     def delete_employe(self, id: int) -> bool:

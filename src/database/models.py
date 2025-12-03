@@ -16,9 +16,8 @@ class EmployeMySQL(BaseMysql):
     poste = Column(String(100), nullable=False)
     salaire = Column(Float, nullable=False)
     department = Column(String(100), nullable=False)
-    date_embauche = Column(DateTime, default=datetime.datetime.utcnow)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    date_embauche = Column(DateTime, nullable=True)
+
 
 class EmployePostgreSQL(BasePostgres):
     __tablename__ = "employes"
@@ -31,4 +30,4 @@ class EmployePostgreSQL(BasePostgres):
     salaire = Column(Float)
     department = Column(String(50))
     date_embauche = Column(DateTime)
-    synced_at = Column(DateTime, default=datetime.datetime.utcnow)
+    synced_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=True)

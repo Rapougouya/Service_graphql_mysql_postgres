@@ -1,0 +1,24 @@
+apiVersion: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    access: proxy
+    url: mysql:3306
+    user: root
+    secureJsonData:
+      password: root
+    jsonData:
+      database: entreprise
+      sslmode: disable
+
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    user: postgres
+    secureJsonData:
+      password: postgres
+    jsonData:
+      database: entreprise
+      sslmode: disable
