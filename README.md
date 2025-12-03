@@ -19,54 +19,6 @@ Ce projet implémente un service GraphQL avancé pour la gestion des données d'
 
 ---
 
-## 🏗️ Architecture complète
-
-flowchart LR
-  %% Clients
-  A[Client Web / GraphiQL] -->|HTTP GraphQL| B[API GraphQL - FastAPI + Strawberry]
-  A2[CI / Professeur / Tests] -->|HTTP| B
-
-  %% API & internal
-  subgraph APP
-    B --> C[MySQL (source)]
-    B --> K[Kafka Producer]
-    B --> M[Prometheus client / metrics]
-  end
-
-  %% Kafka pipeline
-  subgraph KAFKA_CLUSTER
-    Z[Zookeeper]
-    Kb[Kafka Broker]
-    Kb --> KE[Topic: employes-sync]
-  end
-  K --> Kb
-
-  %% Consumer & Postgres
-  subgraph WORKERS
-    KC[Kafka Consumer (ETL)]
-    KC --> P[PostgreSQL (destination)]
-  end
-  Kb --> KC
-
-  %% Monitoring stack
-  M --> Prom[Prometheus]
-  Prom --> Graf[Grafana]
-  Kb --> Kexp[Kafka Exporter]
-  Kexp --> Prom
-  Kb --> KUI[Kafka UI]
-
-  %% Volumes & Docker
-  B ---|container| Docker[Docker Compose network: monitoring]
-  C ---|volume| VolMySQL[(mysql_data)]
-  P ---|volume| VolPG[(postgres_data)]
-  Graf ---|volume| VolGraf[(grafana_data)]
-  Prom ---|volume| VolProm[(prometheus_data)]
-
-  style APP fill:#f9f,stroke:#333,stroke-width:1px
-  style KAFKA_CLUSTER fill:#ffd,stroke:#333,stroke-width:1px
-  style WORKERS fill:#efe,stroke:#333
-
-
 ## 🔄 Flux de données détaillés
 
 ### Flux 1 : Création d'un employé

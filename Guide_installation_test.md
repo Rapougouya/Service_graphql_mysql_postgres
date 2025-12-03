@@ -4,7 +4,20 @@
 <div align="center">
 
 **Master 1 - Développement à Base des Composants**  
-**Exercice 9: Service GraphQL pour 2 Bases de Données**
+**Exercice 9: Service GraphQL avec Synchronisation ETL Kafka**
+
+**Objectifs :**
+- Créer une application Python pour gérer et afficher des données d'employés
+- Utiliser Apache Kafka pour l'ETL et synchroniser les données entre deux bases de données
+- Exposer les données synchronisées via une API GraphQL
+- Surveiller les performances avec Prometheus et Grafana
+
+**Tâches réalisées :**
+- ✅ Application Python avec composants modulaires pour gérer les employés
+- ✅ Pipeline ETL Kafka pour synchroniser les données entre MySQL et PostgreSQL
+- ✅ API GraphQL (Strawberry) exposant les données synchronisées
+- ✅ Monitoring complet avec Prometheus et Grafana
+- ✅ Employés de test avec données réalistes
 
 </div>
 
