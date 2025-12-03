@@ -435,7 +435,7 @@ docker volume ls
 
 ---
 
-## 📚 TECHNOLOGIQUE ET Outils Utilisés
+## 📚 TECHNOLOGIQUE ET OUTILS UTILISES
 
 ### **Backend & API**
 - **Python 3.11** - Langage principal
