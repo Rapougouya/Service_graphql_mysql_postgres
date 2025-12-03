@@ -23,9 +23,8 @@
    - [Test Grafana Dashboards](#-test-grafana-dashboards)
    - [Test Kafka UI](#-test-kafka-ui)
    - [Test PostgreSQL](#-test-postgresql)
-7. [Tests unitaires](#-tests-unitaires)
-8. [Dépannage](#-dépannage)
-9. [Checklist finale](#-checklist-finale)
+7. [Dépannage](#-dépannage)
+8. [Checklist finale](#-checklist-finale)
 
 ---
 
@@ -33,7 +32,7 @@
 
 Avant de commencer, assurez-vous que:
 
-- **Windows 10/11** avec PowerShell v5.1+
+- **Windows 11** avec PowerShell v5.1+
 - **Python 3.11+** installé
 - **Aucun logiciel** n'occupe les ports nécessaires
 
@@ -393,28 +392,6 @@ Résultat: Tous les employés créés dans MySQL sont présents dans PostgreSQL 
 
 ---
 
-## 🧪 TESTS UNITAIRES
-
-### **Exécuter tous les tests**
-
-```powershell
-# Activer l'environnement virtuel
-.\venv311\Scripts\Activate.ps1
-
-# Lancer pytest
-pytest -v
-
-# Ou avec résumé court
-pytest -q
-```
-
-Tests à valider:
-- ✅ `test_database.py` - Connexions MySQL/PostgreSQL
-- ✅ `test_etl.py` - Pipeline Kafka ETL
-- ✅ `test_graphql.py` - Mutations et requêtes GraphQL
-
----
-
 ## 🩺 DÉPANNAGE
 
 ### **Problèmes courants et solutions**
@@ -458,24 +435,7 @@ docker volume ls
 
 ---
 
-## ✅ CHECKLIST FINALE
-
-Avant de soumettre votre projet, assurez-vous que:
-
-- [ ] Tous les services Docker démarrent sans erreurs (`docker-compose up -d`)
-- [ ] L'API GraphQL répond sur http://localhost:8000/graphql
-- [ ] Les tests unitaires passent (`pytest -v`)
-- [ ] Les données MySQL et PostgreSQL sont synchronisées
-- [ ] Prometheus collecte les métriques (http://localhost:9090)
-- [ ] Grafana affiche les dashboards (http://localhost:3000)
-- [ ] Kafka UI montre les topics et messages (http://localhost:8080)
-- [ ] Le code est versionné et poussé sur GitHub
-- [ ] Le `README.md` est à jour avec les instructions complètes
-- [ ] Aucun secret (mots de passe) n'est commité (utiliser `.env` et `.env.example`)
-
----
-
-## 📚 STACK TECHNOLOGIQUE
+## 📚 TECHNOLOGIQUE ET Outils Utilisés
 
 ### **Backend & API**
 - **Python 3.11** - Langage principal
